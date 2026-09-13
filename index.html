@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-widget.js?22"></script>
 <style>
   :root{
     --bg-0:#0a0f1c; --bg-1:#111a30; --bg-2:#16223e;
@@ -47,6 +48,21 @@
     transition:transform .3s ease, border-color .2s ease;
   }
   .settings-btn:hover{transform:rotate(45deg);border-color:var(--blue);}
+  .tg-chip{display:flex;align-items:center;}
+  .tg-login-btn{
+    background:#2aabee;border:none;color:#fff;border-radius:999px;
+    padding:10px 16px;font-size:12px;font-weight:600;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .tg-login-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(42,171,238,0.4);}
+  .tg-profile{
+    display:flex;align-items:center;gap:8px;background:var(--bg-1);border:1px solid var(--line);
+    border-radius:999px;padding:5px 14px 5px 5px;
+  }
+  .tg-profile img{width:30px;height:30px;border-radius:50%;object-fit:cover;}
+  .tg-profile .tg-name{font-size:12px;color:var(--bone);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tg-profile .tg-logout{background:transparent;border:none;color:var(--tan);font-size:14px;padding:0 2px;}
+  .tg-profile .tg-logout:hover{color:var(--danger);}
 
   .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
 
@@ -154,6 +170,12 @@
 
   .promo-row{display:flex;gap:10px;flex-wrap:wrap;}
   .promo-row input[type="text"]{flex:1;min-width:200px;background:var(--bg-2);border:1px solid var(--line);border-radius:999px;color:var(--bone);padding:11px 18px;font-size:13px;}
+  .redeem-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .ref-block{background:var(--bg-1);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;}
+  .ref-block-label{font-size:12px;color:var(--tan);margin-bottom:12px;}
+  .ref-block .redeem-row{margin-bottom:10px;}
+  .ref-status{font-size:12px;color:var(--blue);}
+  .redeem-row input[type="text"]{flex:1;min-width:200px;background:var(--bg-1);border:1px solid var(--line);border-radius:999px;color:var(--bone);padding:11px 18px;font-size:13px;}
 
   .btn-secondary{border:1px solid var(--blue);background:transparent;color:var(--bone);border-radius:999px;padding:10px 18px;font-size:12px;transition:background .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease;white-space:nowrap;}
   .btn-secondary:hover{background:var(--blue);color:#08111f;transform:translateY(-2px);box-shadow:0 6px 14px rgba(59,130,246,0.3);}
@@ -189,7 +211,7 @@
   .batch-item .ico{font-size:34px;}
   .batch-item .name{font-size:11px;margin-top:6px;color:var(--bone);}
   @keyframes popin{from{opacity:0;transform:scale(0.7);}to{opacity:1;transform:scale(1);}}
-  .batch-actions{margin-top:20px;text-align:right;}
+  .batch-actions{margin-top:20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
 
   .transition-overlay{position:fixed;inset:0;z-index:100;pointer-events:none;background:radial-gradient(circle, var(--cta) 0%, var(--blue-dim) 45%, var(--bg-0) 75%);clip-path:circle(0% at 50% 40%);transition:clip-path .55s cubic-bezier(0.6,0,0.3,1);}
   .transition-overlay.active{clip-path:circle(150% at 50% 40%);}
@@ -247,6 +269,9 @@
     <div class="balance">★ <span id="balance-val">500</span></div>
     <div class="coin-balance">🪙 <span id="coins-val">0</span></div>
     <button class="bank-nav-btn" id="go-bank-btn">🏦 Банк</button>
+    <div id="tg-profile-chip" class="tg-chip">
+      <button class="tg-login-btn" id="tg-login-btn">Войти через Telegram</button>
+    </div>
     <button class="settings-btn" id="settings-btn" title="Настройки" aria-label="Настройки">⚙️</button>
   </div>
 </header>
@@ -290,16 +315,36 @@
       <h2>Профиль</h2>
       <p id="inv-count">гифтов: 0</p>
     </div>
+    <div class="ref-block">
+      <div class="ref-block-label">Пригласи друга — получи 150★, а он +200★ и 50🪙 за вход по твоей ссылке</div>
+      <div class="redeem-row">
+        <input type="text" id="ref-link-input" readonly>
+        <button class="btn-secondary" id="ref-copy-btn">Скопировать ссылку</button>
+      </div>
+      <div class="ref-status" id="ref-status"></div>
+    </div>
+    <div class="redeem-row">
+      <input type="text" id="redeem-code-input" placeholder="Вставь код подарка или реферальный код">
+      <button class="btn-secondary gold" id="redeem-code-btn">Принять код</button>
+    </div>
     <div id="inv-empty" class="empty-state">Пока пусто — крути рулетку выше</div>
     <div class="inv-grid" id="inv-grid"></div>
+    <div id="sell-all-row" style="margin-top:18px; display:none;">
+      <button class="btn-secondary gold" id="sell-all-btn">Продать все гифты за <span id="sell-all-val">0</span> ★</button>
+    </div>
   </section>
-  </div>
+</div>
 
 <section class="bank-section wrap" id="bank-section">
   <a class="bank-back" id="back-to-roulette">← К рулетке</a>
   <div class="section-head">
     <h2>Банк TBFPUMBA</h2>
     <p>Проценты, кредиты, магазин и промокоды</p>
+  </div>
+
+  <div class="bank-block">
+    <h3>Улучшения · действуют 1 час</h3>
+    <div class="shop-grid" id="boost-grid"></div>
   </div>
 
   <div class="bank-block">
@@ -382,6 +427,7 @@
     <div class="modal-actions">
       <button class="btn-secondary" id="modal-sell">Продать за <span id="modal-sell-val">0</span> ★</button>
       <button class="btn-secondary gold" id="modal-sell-coin">Продать за <span id="modal-sell-coin-val">0</span> 🪙</button>
+      <button class="btn-secondary" id="modal-gift">🎁 Подарить</button>
       <button class="btn-secondary" id="modal-keep">Оставить</button>
     </div>
   </div>
@@ -392,7 +438,10 @@
     <h3 id="batch-title">Результаты</h3>
     <div class="batch-sub" id="batch-sub"></div>
     <div class="batch-grid" id="batch-grid"></div>
-    <div class="batch-actions"><button class="btn-secondary gold" id="batch-close">Забрать всё</button></div>
+    <div class="batch-actions">
+      <button class="btn-secondary" id="batch-sell">Продать гифты за <span id="batch-sell-val">0</span> ★</button>
+      <button class="btn-secondary gold" id="batch-close">Забрать всё</button>
+    </div>
   </div>
 </div>
 
@@ -412,6 +461,18 @@
           <span class="switch-track"></span>
         </label>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="gift-code-modal">
+  <div class="modal-card" style="max-width:420px;">
+    <button class="modal-close" id="gift-code-close">✕</button>
+    <div class="modal-name" style="margin-top:0;">🎁 Подарок готов</div>
+    <div class="modal-desc" id="gift-code-desc"></div>
+    <textarea id="gift-code-text" readonly rows="3" style="width:100%;margin-top:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;color:var(--bone);padding:12px;font-size:12px;font-family:'IBM Plex Mono',monospace;resize:none;"></textarea>
+    <div class="modal-actions">
+      <button class="btn-secondary gold" id="gift-code-copy">Скопировать код</button>
     </div>
   </div>
 </div>
@@ -448,7 +509,17 @@
     {id:'statue',  name:'MOGH',            ico:'🗿', rarity:'mythic', weight:0.5,  sell:3000, desc:'Одна из самых редких вещей в игре.'},
     {id:'cactus',  name:'Кактус',          ico:'🌵', rarity:'mythic', weight:0.3,  sell:3200, desc:'Свой 3D-горшок и анимация.'},
     {id:'demon',   name:'Демон',           ico:'👹', rarity:'mythic', weight:0.25, sell:3400, desc:'Появляется реже всех. Лучше не злить.'},
-    {id:'phoenix', name:'Феникс',          ico:'🔥', rarity:'mythic', weight:0.22, sell:3600, desc:'Самый редкий и дорогой гифт в игре.'}
+    {id:'phoenix', name:'Феникс',          ico:'🔥', rarity:'mythic', weight:0.22, sell:3600, desc:'Самый редкий и дорогой гифт в игре.'},
+    {id:'pizza',      name:'Пицца',           ico:'🍕', rarity:'common', weight:16,  sell:44,   desc:'Кусок счастья с сыром.'},
+    {id:'headphones', name:'Наушники',        ico:'🎧', rarity:'common', weight:14,  sell:48,   desc:'Свой звук в любой момент.'},
+    {id:'sock',       name:'Носок',           ico:'🧦', rarity:'common', weight:15,  sell:36,   desc:'Тёплый и полосатый.'},
+    {id:'lollipop',   name:'Леденец',         ico:'🍭', rarity:'rare',   weight:11,  sell:145,  desc:'Сладкая закрутка.'},
+    {id:'sunglasses', name:'Очки',            ico:'🕶️', rarity:'rare',   weight:10,  sell:155,  desc:'Стиль без лишних слов.'},
+    {id:'giftbox',    name:'Коробка',         ico:'🎁', rarity:'rare',   weight:9,   sell:165,  desc:'Внутри всегда сюрприз.'},
+    {id:'butterfly',  name:'Бабочка',         ico:'🦋', rarity:'epic',   weight:4,   sell:350,  desc:'Лёгкая и почти невесомая.'},
+    {id:'trident',    name:'Трезубец',        ico:'🔱', rarity:'epic',   weight:3.5, sell:390,  desc:'Оружие морского владыки.'},
+    {id:'ufo',        name:'НЛО',             ico:'🛸', rarity:'legend', weight:1.1, sell:1080, desc:'Прилетело неизвестно откуда.'},
+    {id:'dragon',     name:'Дракон',          ico:'🐉', rarity:'mythic', weight:0.2, sell:3700, desc:'Редчайшее существо в игре. Собственная 3D-модель.'}
   ];
   var RARITY_LABEL = {common:'COMMON', rare:'RARE', epic:'EPIC', legend:'LEGENDARY', mythic:'MYTHIC'};
   var STORE_KEY = 'tbfpumba_gift_battle_v3';
@@ -508,10 +579,14 @@
         s.loan = (s.loan !== undefined) ? s.loan : null;
         s.settings = s.settings || {accent:'blue', reduceMotion:false};
         s.boosts = s.boosts || {};
+        s.tgProfile = s.tgProfile || null;
+        s.redeemedGiftCodes = s.redeemedGiftCodes || [];
+        s.myRefCode = s.myRefCode || null;
+        s.referredBy = s.referredBy || null;
         return s;
       }
     }catch(e){}
-    return {balance:500, bankStars:0, coins:0, xp:0, inventory:{}, bankGifts:[], redeemedCodes:[], loan:null, settings:{accent:'blue', reduceMotion:false}, boosts:{}};
+    return {balance:500, bankStars:0, coins:0, xp:0, inventory:{}, bankGifts:[], redeemedCodes:[], loan:null, settings:{accent:'blue', reduceMotion:false}, boosts:{}, tgProfile:null, redeemedGiftCodes:[], myRefCode:null, referredBy:null};
   }
   function saveState(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
 
@@ -583,19 +658,43 @@
     var total = ids.reduce(function(s,k){ return s + state.inventory[k]; }, 0);
     invCount.textContent = 'гифтов: ' + total;
     invGrid.innerHTML = '';
-    if (ids.length === 0){ invEmpty.style.display = 'block'; invGrid.style.display = 'none'; }
+    var sellAllRow = document.getElementById('sell-all-row');
+    var sellAllVal = document.getElementById('sell-all-val');
+    if (ids.length === 0){
+      invEmpty.style.display = 'block'; invGrid.style.display = 'none';
+      sellAllRow.style.display = 'none';
+    }
     else{
       invEmpty.style.display = 'none'; invGrid.style.display = 'grid';
+      var sumSell = 0;
       ids.forEach(function(id){
         var g = byId(id); if (!g) return;
+        sumSell += sellValue(g) * state.inventory[id];
         var card = document.createElement('div');
         card.className = 'gift-card rar-' + g.rarity;
         card.innerHTML = '<div class="count">x' + state.inventory[id] + '</div><div class="ico">' + g.ico + '</div><div class="name">' + g.name + '</div>';
         card.addEventListener('click', function(){ openModal(g); });
         invGrid.appendChild(card);
       });
+      sellAllVal.textContent = sumSell;
+      sellAllRow.style.display = 'block';
     }
   }
+
+  document.getElementById('sell-all-btn').addEventListener('click', function(){
+    var ids = Object.keys(state.inventory).filter(function(k){ return state.inventory[k] > 0; });
+    if (ids.length === 0) return;
+    var total = 0;
+    ids.forEach(function(id){
+      var g = byId(id); if (!g) return;
+      total += sellValue(g) * state.inventory[id];
+    });
+    if (!window.confirm('Продать все гифты за ' + total + ' ★? Это нельзя отменить.')) return;
+    ids.forEach(function(id){ state.inventory[id] = 0; });
+    state.balance += total;
+    saveState(); renderTop(); renderInventory();
+    showToast('Продано всё за ' + total + ' ★');
+  });
 
   function showToast(msg){
     toastEl.textContent = msg;
@@ -613,7 +712,10 @@
   var spinning = false;
   var spinCurrency = 'stars';
 
-  function spinCost(count){ return spinCurrency === 'stars' ? count*100 : count*50; }
+  function spinCost(count){
+    var base = spinCurrency === 'stars' ? count*100 : count*50;
+    return isBoostActive('cheapspins') ? Math.round(base*0.8) : base;
+  }
   function updateSpinButtonLabels(){
     spinButtons.forEach(function(b){
       var count = parseInt(b.getAttribute('data-count'),10);
@@ -647,14 +749,20 @@
   function doSpin(count){
     if (spinning) return;
     var cost = spinCost(count);
-    var currencyLabel = spinCurrency === 'stars' ? '★' : '🪙';
-    if (spinCurrency === 'stars' && state.balance < cost){ showToast('Не хватает звёзд'); return; }
-    if (spinCurrency === 'coins' && state.coins < cost){ showToast('Не хватает монет'); return; }
+    var isFreeSpin = isBoostActive('freespin') && Math.random() < 0.15;
+    if (!isFreeSpin){
+      if (spinCurrency === 'stars' && state.balance < cost){ showToast('Не хватает звёзд'); return; }
+      if (spinCurrency === 'coins' && state.coins < cost){ showToast('Не хватает монет'); return; }
+    }
     spinning = true;
     reelFrame.classList.add('spinning');
     spinButtons.forEach(function(b){ b.disabled = true; });
 
-    if (spinCurrency === 'stars'){ state.balance -= cost; } else { state.coins -= cost; }
+    if (!isFreeSpin){
+      if (spinCurrency === 'stars'){ state.balance -= cost; } else { state.coins -= cost; }
+    } else {
+      showToast('🎰 Бесплатный спин!');
+    }
     renderTop();
 
     var results = [];
@@ -687,11 +795,15 @@
       reelFrame.classList.remove('spinning');
       results.forEach(function(r){ state.inventory[r.id] = (state.inventory[r.id] || 0) + 1; });
       var coinsGained = 0;
+      var coinChance = isBoostActive('coindrop') ? 0.5 : 0.2;
       for (var ci=0; ci<count; ci++){
-        if (Math.random() < 0.2){ coinsGained += 1 + Math.floor(Math.random()*2); }
+        if (Math.random() < coinChance){
+          var base = 1 + Math.floor(Math.random()*2);
+          coinsGained += isBoostActive('coinx2') ? base*2 : base;
+        }
       }
       if (coinsGained > 0){ state.coins += coinsGained; }
-      addXp(10*count);
+      addXp(10*count*(isBoostActive('xp2') ? 2 : 1));
       saveState();
       renderTop();
       renderInventory();
@@ -716,6 +828,7 @@
   var modalSellCoin = document.getElementById('modal-sell-coin');
   var modalSellCoinVal = document.getElementById('modal-sell-coin-val');
   var modalKeep = document.getElementById('modal-keep');
+  var modalGift = document.getElementById('modal-gift');
   var modalClose = document.getElementById('modal-close');
   var currentGift = null;
 
@@ -726,7 +839,7 @@
     modalIco.textContent = g.ico;
     modalName.textContent = g.name;
     modalDesc.textContent = g.desc;
-    modalSellVal.textContent = g.sell;
+    modalSellVal.textContent = sellValue(g);
     modalSellCoinVal.textContent = coinSellPrice(g);
     modal.classList.remove('hidden');
     requestAnimationFrame(function(){ modal.classList.add('visible'); });
@@ -739,15 +852,22 @@
   }
   modalClose.addEventListener('click', closeModal);
   modalKeep.addEventListener('click', closeModal);
+  modalGift.addEventListener('click', function(){
+    if (!currentGift) return;
+    var g = currentGift;
+    closeModal();
+    setTimeout(function(){ sendGiftCode(g); }, 210);
+  });
   modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
   modalSell.addEventListener('click', function(){
     if (!currentGift) return;
     var id = currentGift.id;
     if (!state.inventory[id] || state.inventory[id] <= 0){ closeModal(); return; }
     state.inventory[id] -= 1;
-    state.balance += currentGift.sell;
+    var val = sellValue(currentGift);
+    state.balance += val;
     saveState(); renderTop(); renderInventory();
-    showToast('Продано за ' + currentGift.sell + ' ★');
+    showToast('Продано за ' + val + ' ★');
     closeModal();
   });
   modalSellCoin.addEventListener('click', function(){
@@ -767,12 +887,16 @@
   var batchGrid = document.getElementById('batch-grid');
   var batchSub = document.getElementById('batch-sub');
   var batchClose = document.getElementById('batch-close');
+  var batchSell = document.getElementById('batch-sell');
+  var batchSellVal = document.getElementById('batch-sell-val');
+  var currentBatch = null;
 
   function openBatchModal(results){
+    currentBatch = results;
     batchGrid.innerHTML = '';
     var total = 0;
     results.forEach(function(r, idx){
-      total += r.sell;
+      total += sellValue(r);
       var el = document.createElement('div');
       el.className = 'batch-item rar-' + r.rarity;
       el.style.animationDelay = (idx*0.08) + 's';
@@ -780,6 +904,7 @@
       batchGrid.appendChild(el);
     });
     batchSub.textContent = 'Выбито предметов: ' + results.length + ' · суммарная цена продажи: ' + total + ' ★';
+    batchSellVal.textContent = total;
     batchModal.classList.remove('hidden');
     requestAnimationFrame(function(){ batchModal.classList.add('visible'); });
   }
@@ -789,6 +914,20 @@
   }
   batchClose.addEventListener('click', closeBatchModal);
   batchModal.addEventListener('click', function(e){ if (e.target === batchModal) closeBatchModal(); });
+  batchSell.addEventListener('click', function(){
+    if (!currentBatch) { closeBatchModal(); return; }
+    var total = 0;
+    currentBatch.forEach(function(r){
+      var have = state.inventory[r.id] || 0;
+      if (have <= 0) return;
+      state.inventory[r.id] = have - 1;
+      total += sellValue(r);
+    });
+    state.balance += total;
+    saveState(); renderTop(); renderInventory();
+    showToast('Продано за ' + total + ' ★');
+    closeBatchModal();
+  });
 
   // ---------- 3D models for every gift ----------
   var specialCanvas = document.getElementById('special-canvas');
@@ -1276,22 +1415,202 @@
     return addBase(g, -1.05);
   }
 
+  function buildPizza(){
+    var g = new THREE.Group();
+    var doughMat = mkMat(0xe8b661, {roughness:0.6});
+    var cheeseMat = mkMat(0xffcf5c, {roughness:0.5, emissive:0x8a5a1a, emissiveIntensity:0.1});
+    var slice = new THREE.Mesh(new THREE.CylinderGeometry(0.85,0.85,0.16,24,1,false,0,Math.PI/3.2), cheeseMat);
+    slice.rotation.x = Math.PI/2; slice.rotation.z = -Math.PI/6.4; g.add(slice);
+    var crust = new THREE.Mesh(new THREE.TorusGeometry(0.85,0.09,10,24,Math.PI/3.2), doughMat);
+    crust.rotation.x = Math.PI/2; crust.rotation.z = -Math.PI/6.4; crust.position.y = 0.02; g.add(crust);
+    var toppingColors = [0xc11f3d, 0x8a1230, 0x3f8f4a];
+    for (var i=0;i<6;i++){
+      var top = new THREE.Mesh(new THREE.SphereGeometry(0.09,10,10), mkMat(toppingColors[i%3]));
+      var ang = (Math.random()-0.5)*0.9;
+      var r = 0.25+Math.random()*0.45;
+      top.position.set(Math.cos(ang)*r*0.9, 0.12, Math.sin(ang)*r);
+      g.add(top);
+    }
+    return addBase(g, -0.55);
+  }
+
+  function buildHeadphones(){
+    var g = new THREE.Group();
+    var m = mkMat(0x2e3648, {roughness:0.4});
+    var accent = mkMat(0x3b82f6, {emissive:0x3b82f6, emissiveIntensity:0.3});
+    var band = new THREE.Mesh(new THREE.TorusGeometry(0.55,0.07,10,24,Math.PI), m);
+    band.rotation.z = Math.PI; g.add(band);
+    [-0.55,0.55].forEach(function(x){
+      var cup = new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.24,0.22,20), m);
+      cup.rotation.z = Math.PI/2; cup.position.set(x,-0.05,0); g.add(cup);
+      var pad = new THREE.Mesh(new THREE.TorusGeometry(0.2,0.04,8,20), accent);
+      pad.rotation.y = Math.PI/2; pad.position.set(x + (x>0?0.11:-0.11),-0.05,0); g.add(pad);
+    });
+    return addBase(g, -0.85);
+  }
+
+  function buildSock(){
+    var g = new THREE.Group();
+    var m = mkMat(0xeaf1fb, {roughness:0.6});
+    var stripeMat = mkMat(0x3b82f6, {roughness:0.5});
+    var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.3,1.1,16), m);
+    leg.position.y = 0.35; g.add(leg);
+    var foot = new THREE.Mesh(new THREE.CapsuleGeometry ? new THREE.CapsuleGeometry(0.28,0.5,4,12) : new THREE.CylinderGeometry(0.28,0.28,0.7,16), m);
+    foot.rotation.z = Math.PI/2; foot.position.set(0.32,-0.35,0); g.add(foot);
+    [0.55,0.25,-0.05].forEach(function(y){
+      var stripe = new THREE.Mesh(new THREE.TorusGeometry(0.29,0.05,8,20), stripeMat);
+      stripe.rotation.x = Math.PI/2; stripe.position.y = y; g.add(stripe);
+    });
+    return addBase(g, -1.05);
+  }
+
+  function buildLollipop(){
+    var g = new THREE.Group();
+    var colors = [0xff3d7a, 0xffffff, 0xffb347];
+    for (var i=0;i<4;i++){
+      var ring = new THREE.Mesh(new THREE.TorusGeometry(0.5-i*0.12,0.09,10,28), mkMat(colors[i%3], {roughness:0.3}));
+      ring.position.z = i*0.05; g.add(ring);
+    }
+    var stick = new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,0.9,10), mkMat(0xf2ead9));
+    stick.position.y = -0.85; g.add(stick);
+    return addBase(g, -1.35);
+  }
+
+  function buildSunglasses(){
+    var g = new THREE.Group();
+    var m = mkMat(0x14181f, {roughness:0.25, clearcoat:0.9});
+    [-0.34,0.34].forEach(function(x){
+      var lens = new THREE.Mesh(new THREE.SphereGeometry(0.28,16,16), m);
+      lens.scale.set(1,0.85,0.35);
+      lens.position.set(x,0,0); g.add(lens);
+      var arm = new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,0.55,8), m);
+      arm.rotation.y = Math.PI/2; arm.rotation.z = 0.15*(x>0?1:-1);
+      arm.position.set(x + (x>0?0.5:-0.5), 0, -0.15); g.add(arm);
+    });
+    var bridge = new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,0.2,8), m);
+    bridge.rotation.z = Math.PI/2; g.add(bridge);
+    return addBase(g, -0.65);
+  }
+
+  function buildGiftbox(){
+    var g = new THREE.Group();
+    var boxMat = mkMat(0xc11f3d, {roughness:0.4});
+    var ribbonMat = mkMat(0xf2b84b, {metalness:0.6, roughness:0.3});
+    var box = new THREE.Mesh(new THREE.BoxGeometry(1,0.8,1), boxMat);
+    g.add(box);
+    var r1 = new THREE.Mesh(new THREE.BoxGeometry(1.04,0.16,1.04), ribbonMat); g.add(r1);
+    var r2 = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.84,1.04), ribbonMat); g.add(r2);
+    [-0.13,0.13].forEach(function(x){
+      var loop = new THREE.Mesh(new THREE.TorusGeometry(0.16,0.06,8,16), ribbonMat);
+      loop.position.set(x,0.5,0); loop.rotation.y = Math.PI/2;
+      loop.rotation.z = x>0 ? -0.6 : 0.6; g.add(loop);
+    });
+    return addBase(g, -0.85);
+  }
+
+  function buildButterfly(){
+    var g = new THREE.Group();
+    var body = new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.7,8), mkMat(0x1c1c22));
+    g.add(body);
+    var wingMat = mkMat(0x8b5cf6, {roughness:0.35, emissive:0x8b5cf6, emissiveIntensity:0.2, transparent:true, opacity:0.9});
+    function wing(x,y,scale,rot){
+      var w = new THREE.Mesh(new THREE.SphereGeometry(0.32,14,14), wingMat);
+      w.scale.set(0.35,1,scale);
+      w.position.set(x,y,0); w.rotation.z = rot;
+      return w;
+    }
+    g.add(wing(0.28,0.15,1,-0.3), wing(-0.28,0.15,1,0.3));
+    g.add(wing(0.2,-0.2,0.65,-0.5), wing(-0.2,-0.2,0.65,0.5));
+    [-0.06,0.06].forEach(function(x){
+      var ant = new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,0.3,6), mkMat(0x1c1c22));
+      ant.position.set(x,0.45,0); ant.rotation.z = x>0?0.3:-0.3; g.add(ant);
+    });
+    return addBase(g, -0.75);
+  }
+
+  function buildTrident(){
+    var g = new THREE.Group();
+    var m = mkMat(0x8fa3bf, {metalness:0.85, roughness:0.25});
+    var shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,1.6,12), m);
+    shaft.position.y = -0.2; g.add(shaft);
+    var crossbar = new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,0.7,10), m);
+    crossbar.rotation.z = Math.PI/2; crossbar.position.y = 0.5; g.add(crossbar);
+    [-0.35,0,0.35].forEach(function(x){
+      var prong = new THREE.Mesh(new THREE.ConeGeometry(0.06,0.55,10), m);
+      prong.position.set(x,0.85,0); g.add(prong);
+    });
+    return addBase(g, -1.3);
+  }
+
+  function buildUfo(){
+    var g = new THREE.Group();
+    var bodyMat = mkMat(0x8fa3bf, {metalness:0.8, roughness:0.2});
+    var glassMat = mkMat(0x5fd4ff, {transparent:true, opacity:0.6, emissive:0x5fd4ff, emissiveIntensity:0.4, roughness:0.1});
+    var disc = new THREE.Mesh(new THREE.SphereGeometry(0.75,24,12), bodyMat);
+    disc.scale.set(1,0.28,1); g.add(disc);
+    var dome = new THREE.Mesh(new THREE.SphereGeometry(0.34,20,20,0,Math.PI*2,0,Math.PI/1.9), glassMat);
+    dome.position.y = 0.08; g.add(dome);
+    for (var i=0;i<8;i++){
+      var a = (i/8)*Math.PI*2;
+      var light = new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), mkMat(0xf2b84b,{emissive:0xf2b84b, emissiveIntensity:0.8}));
+      light.position.set(Math.cos(a)*0.68,-0.05,Math.sin(a)*0.68);
+      g.add(light);
+    }
+    return addBase(g, -0.65);
+  }
+
+  function buildDragon(){
+    var g = new THREE.Group();
+    var scaleMat = mkMat(0x1c5c30, {roughness:0.45});
+    var bellyMat = mkMat(0xd7c98a, {roughness:0.5});
+    var wingMat = mkMat(0x2f8f4a, {roughness:0.5, transparent:true, opacity:0.85});
+    var body = new THREE.Mesh(new THREE.ConeGeometry(0.45,1.3,16), scaleMat);
+    body.rotation.x = Math.PI; body.position.y = -0.1; g.add(body);
+    var belly = new THREE.Mesh(new THREE.ConeGeometry(0.25,1.1,12), bellyMat);
+    belly.rotation.x = Math.PI; belly.position.set(0,-0.1,0.2); g.add(belly);
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.32,16,16), scaleMat);
+    head.position.y = 0.7; g.add(head);
+    var snout = new THREE.Mesh(new THREE.ConeGeometry(0.14,0.35,10), scaleMat);
+    snout.rotation.x = Math.PI/2; snout.position.set(0,0.65,0.32); g.add(snout);
+    [-0.12,0.12].forEach(function(x){
+      var horn = new THREE.Mesh(new THREE.ConeGeometry(0.05,0.28,8), mkMat(0xeaf1fb));
+      horn.position.set(x,0.98,0.05); horn.rotation.z = x>0?-0.3:0.3; g.add(horn);
+      var eye = new THREE.Mesh(new THREE.SphereGeometry(0.045,8,8), mkMat(0xff2a2a,{emissive:0xff2a2a, emissiveIntensity:1}));
+      eye.position.set(x*1.4,0.72,0.28); g.add(eye);
+    });
+    function wing(x, mirror){
+      var w = new THREE.Mesh(new THREE.CircleGeometry(0.55,3), wingMat);
+      w.position.set(x,0.15,-0.1);
+      w.rotation.y = mirror ? Math.PI/2+0.4 : -Math.PI/2-0.4;
+      w.rotation.z = mirror ? -0.4 : 0.4;
+      return w;
+    }
+    g.add(wing(0.55,false), wing(-0.55,true));
+    var tail = new THREE.Mesh(new THREE.ConeGeometry(0.12,0.9,10), scaleMat);
+    tail.rotation.x = Math.PI*0.4; tail.position.set(0,-0.95,-0.5); g.add(tail);
+    return addBase(g, -1.35);
+  }
+
   var GIFT_BUILDERS = {
-    statue:buildStatueGroup, cactus:buildCactusGroup, demon:buildDemonGroup, phoenix:buildPhoenixGroup,
+    statue:buildStatueGroup, cactus:buildCactusGroup, demon:buildDemonGroup, phoenix:buildPhoenixGroup, dragon:buildDragon,
     rose:buildRose, bear:buildBear, heart:buildHeart, donut:buildDonut, balloon:buildBalloon, bone:buildBone,
     cake:buildCake, ring:buildRing, bolt:buildBolt, joystick:buildJoystick,
     rocket:buildRocket, hat:buildHat, crown:buildCrown, snake:buildSnake, crystal:buildCrystal, anchor:buildAnchor,
-    cup:buildCup, diamond:buildDiamond, eagle:buildEagle, amulet:buildAmulet, unicorn:buildUnicorn
+    cup:buildCup, diamond:buildDiamond, eagle:buildEagle, amulet:buildAmulet, unicorn:buildUnicorn,
+    pizza:buildPizza, headphones:buildHeadphones, sock:buildSock, lollipop:buildLollipop, sunglasses:buildSunglasses,
+    giftbox:buildGiftbox, butterfly:buildButterfly, trident:buildTrident, ufo:buildUfo
   };
 
   var modelGroups = {};
-  GIFTS.forEach(function(g){
-    var builder = GIFT_BUILDERS[g.id];
+  function getModelGroup(id){
+    if (modelGroups[id]) return modelGroups[id];
+    var builder = GIFT_BUILDERS[id];
     var grp = builder ? builder() : buildRing();
     grp.visible = false;
     specialScene.add(grp);
-    modelGroups[g.id] = grp;
-  });
+    modelGroups[id] = grp;
+    return grp;
+  }
   specialScene.add(new THREE.AmbientLight(0x3a4a6e, 0.9));
   var sKey = new THREE.DirectionalLight(0xffffff, 2.4); sKey.position.set(3.2,3.6,4.2); specialScene.add(sKey);
   var sFill = new THREE.PointLight(0x3b82f6, 1.4, 22); sFill.position.set(-3.4,0.5,2.6); specialScene.add(sFill);
@@ -1350,7 +1669,10 @@
     specialRenderer.render(specialScene, specialCamera);
   }
   function startSpecial(id){
-    Object.keys(modelGroups).forEach(function(k){ modelGroups[k].visible = (k === id); modelGroups[k].position.y = 0; });
+    Object.keys(modelGroups).forEach(function(k){ modelGroups[k].visible = false; });
+    var grp = getModelGroup(id);
+    grp.visible = true;
+    grp.position.y = 0;
     activeGroupId = id;
     resizeSpecial();
     if (!specialRAF) specialLoop();
@@ -1469,10 +1791,52 @@
 
   var bankOffers = {};
   var bankCoinOffers = {};
+  function renderBoosts(){
+    var grid = document.getElementById('boost-grid');
+    grid.innerHTML = '';
+    BOOSTS.forEach(function(b){
+      var active = isBoostActive(b.id);
+      var card = document.createElement('div');
+      card.className = 'shop-card';
+      var statusHtml = active
+        ? '<div class="price" style="color:var(--blue);">активен · ' + Math.max(1, Math.ceil((state.boosts[b.id]-Date.now())/60000)) + ' мин</div>'
+        : '<div class="price">' + b.priceStars + ' ★ · ' + b.priceCoins + ' 🪙</div>';
+      card.innerHTML = '<div class="ico">'+b.ico+'</div><div class="name">'+b.name+'</div><div class="bank-row-meta" style="margin-top:4px;">'+b.desc+'</div>'+statusHtml;
+      if (!active){
+        var btnWrap = document.createElement('div');
+        btnWrap.style.display = 'flex'; btnWrap.style.gap = '6px'; btnWrap.style.marginTop = '10px';
+        var btnS = document.createElement('button');
+        btnS.className = 'btn-secondary'; btnS.style.flex = '1'; btnS.textContent = 'За ★';
+        btnS.addEventListener('click', function(){
+          if (state.balance < b.priceStars){ showToast('Не хватает звёзд'); return; }
+          state.balance -= b.priceStars;
+          activateBoost(b.id);
+        });
+        var btnC = document.createElement('button');
+        btnC.className = 'btn-secondary gold'; btnC.style.flex = '1'; btnC.textContent = 'За 🪙';
+        btnC.addEventListener('click', function(){
+          if (state.coins < b.priceCoins){ showToast('Не хватает монет'); return; }
+          state.coins -= b.priceCoins;
+          activateBoost(b.id);
+        });
+        btnWrap.appendChild(btnS); btnWrap.appendChild(btnC);
+        card.appendChild(btnWrap);
+      }
+      grid.appendChild(card);
+    });
+  }
+  function activateBoost(id){
+    var now = Date.now();
+    var current = (state.boosts[id] && state.boosts[id] > now) ? state.boosts[id] : now;
+    state.boosts[id] = current + BOOST_MS;
+    saveState(); renderTop(); renderBank();
+    showToast('Улучшение активировано на 1 час: ' + boostById(id).name);
+  }
   function renderBank(){
     bankStarsVal.textContent = state.bankStars;
     coinsBankVal.textContent = state.coins;
     renderLoan();
+    renderBoosts();
 
     var giftsListEl = document.getElementById('bank-gifts-list');
     var giftsEmptyEl = document.getElementById('bank-gifts-empty');
@@ -1539,7 +1903,7 @@
       invIds.forEach(function(id){
         var g = byId(id); if (!g) return;
         if (bankOffers[id] === undefined){
-          bankOffers[id] = Math.max(1, Math.round(g.sell*(0.7+Math.random()*0.4)));
+          bankOffers[id] = Math.max(1, Math.round(sellValue(g)*(0.7+Math.random()*0.4)));
         }
         if (bankCoinOffers[id] === undefined){
           bankCoinOffers[id] = Math.max(1, Math.round(coinSellPrice(g)*(0.7+Math.random()*0.4)));
@@ -1624,6 +1988,157 @@
     showToast('Промокод активирован! Получены редкие гифты 🎉');
   });
 
+  // ---------- telegram login ----------
+  // Юзернейм твоего бота (без @). В @BotFather команда /setdomain уже настроена на этот бот —
+  // просто пришли туда домен, на котором будет висеть сайт (например: username.github.io).
+  var TG_BOT_USERNAME = 'gametbf_bot';
+
+  window.onTelegramAuth = function(user){
+    state.tgProfile = user;
+    saveState();
+    renderTgProfile();
+    showToast('Привет, ' + user.first_name + '!');
+  };
+
+  function renderTgProfile(){
+    var chip = document.getElementById('tg-profile-chip');
+    if (state.tgProfile){
+      var p = state.tgProfile;
+      var name = p.first_name + (p.last_name ? ' ' + p.last_name : '');
+      chip.innerHTML =
+        '<div class="tg-profile">' +
+        (p.photo_url ? '<img src="'+p.photo_url+'" alt="">' : '') +
+        '<span class="tg-name">'+name+'</span>' +
+        '<button class="tg-logout" id="tg-logout-btn" title="Выйти">✕</button>' +
+        '</div>';
+      document.getElementById('tg-logout-btn').addEventListener('click', function(){
+        state.tgProfile = null; saveState(); renderTgProfile();
+      });
+    } else {
+      chip.innerHTML = '';
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://telegram.org/js/telegram-widget.js?22';
+      s.setAttribute('data-telegram-login', TG_BOT_USERNAME);
+      s.setAttribute('data-size', 'medium');
+      s.setAttribute('data-radius', '20');
+      s.setAttribute('data-onauth', 'onTelegramAuth(user)');
+      s.setAttribute('data-request-access', 'write');
+      chip.appendChild(s);
+    }
+  }
+
+  function tgDisplayName(){
+    if (state.tgProfile){ return state.tgProfile.first_name || state.tgProfile.username || 'Игрок'; }
+    return 'Игрок';
+  }
+
+  // ---------- gifting between players (serverless gift codes) ----------
+  function encodeGiftCode(payload){
+    return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  }
+  function decodeGiftCode(code){
+    try{ return JSON.parse(decodeURIComponent(escape(atob(code.trim())))); }catch(e){ return null; }
+  }
+  function sendGiftCode(g){
+    if (!state.inventory[g.id] || state.inventory[g.id] <= 0){ showToast('Нет такого гифта'); return; }
+    state.inventory[g.id] -= 1;
+    var payload = {v:1, gid:g.id, from:tgDisplayName(), code: 'g'+Date.now()+Math.random().toString(36).slice(2)};
+    var code = encodeGiftCode(payload);
+    saveState(); renderInventory();
+    openCodeModal(code, 'Гифт «' + g.name + '» отправлен из твоего профиля. Перешли этот код другу — он вставит его в поле «Принять код» в профиле.');
+  }
+  function redeemCode(codeStr){
+    var payload = decodeGiftCode(codeStr);
+    if (!payload || !payload.code){ showToast('Код не распознан'); return; }
+    state.redeemedGiftCodes = state.redeemedGiftCodes || [];
+    if (state.redeemedGiftCodes.indexOf(payload.code) !== -1){ showToast('Этот код уже использован на этом устройстве'); return; }
+    if (payload.gid){
+      var g = byId(payload.gid);
+      if (!g){ showToast('Гифт в коде не распознан'); return; }
+      state.redeemedGiftCodes.push(payload.code);
+      state.inventory[g.id] = (state.inventory[g.id]||0) + 1;
+      saveState(); renderInventory();
+      showToast('Подарок от ' + (payload.from||'друга') + ': ' + g.ico + ' ' + g.name + '!');
+    } else if (payload.ref){
+      if (payload.ref !== myReferralCode()){ showToast('Этот реферальный код не для тебя'); return; }
+      state.redeemedGiftCodes.push(payload.code);
+      state.balance += 150;
+      saveState(); renderTop();
+      showToast('Реферальная награда от ' + (payload.from||'друга') + ': +150 ★');
+    } else {
+      showToast('Код не распознан');
+    }
+  }
+
+  var giftCodeModal = document.getElementById('gift-code-modal');
+  function openCodeModal(code, desc){
+    document.getElementById('gift-code-desc').textContent = desc;
+    document.getElementById('gift-code-text').value = code;
+    giftCodeModal.classList.remove('hidden');
+    requestAnimationFrame(function(){ giftCodeModal.classList.add('visible'); });
+  }
+  function closeGiftCodeModal(){
+    giftCodeModal.classList.remove('visible');
+    setTimeout(function(){ giftCodeModal.classList.add('hidden'); }, 200);
+  }
+  document.getElementById('gift-code-close').addEventListener('click', closeGiftCodeModal);
+  giftCodeModal.addEventListener('click', function(e){ if (e.target === giftCodeModal) closeGiftCodeModal(); });
+  document.getElementById('gift-code-copy').addEventListener('click', function(){
+    var ta = document.getElementById('gift-code-text');
+    ta.select();
+    try{ document.execCommand('copy'); showToast('Код скопирован'); }catch(e){ showToast('Скопируй код вручную'); }
+  });
+  document.getElementById('redeem-code-btn').addEventListener('click', function(){
+    var input = document.getElementById('redeem-code-input');
+    if (!input.value.trim()){ showToast('Вставь код'); return; }
+    redeemCode(input.value);
+    input.value = '';
+  });
+
+  // ---------- referral system ----------
+  function myReferralCode(){
+    if (!state.myRefCode){
+      state.myRefCode = (state.tgProfile && state.tgProfile.username) ? state.tgProfile.username : ('p'+Math.random().toString(36).slice(2,8));
+      saveState();
+    }
+    return state.myRefCode;
+  }
+  function referralLink(){
+    return window.location.origin + window.location.pathname + '?ref=' + encodeURIComponent(myReferralCode());
+  }
+  function renderReferral(){
+    var input = document.getElementById('ref-link-input');
+    if (input) input.value = referralLink();
+    var status = document.getElementById('ref-status');
+    if (status){
+      status.textContent = state.referredBy ? ('Ты пришёл по приглашению: ' + state.referredBy) : 'Пока никто тебя не приглашал';
+    }
+  }
+  function checkReferralParam(){
+    try{
+      var params = new URLSearchParams(window.location.search);
+      var ref = params.get('ref');
+      if (ref && !state.referredBy && ref !== myReferralCode()){
+        state.referredBy = ref;
+        state.balance += 200;
+        state.coins += 50;
+        saveState(); renderTop();
+        showToast('Бонус за приглашение: +200 ★ +50 🪙');
+        var payload = {v:1, ref: ref, from: tgDisplayName(), code: 'r'+Date.now()+Math.random().toString(36).slice(2)};
+        var code = encodeGiftCode(payload);
+        setTimeout(function(){
+          openCodeModal(code, 'Ты получил бонус за приглашение! Отправь этот код тому, кто тебя позвал — он получит награду за реферала.');
+        }, 300);
+      }
+    }catch(e){}
+  }
+  document.getElementById('ref-copy-btn').addEventListener('click', function(){
+    var input = document.getElementById('ref-link-input');
+    input.select();
+    try{ document.execCommand('copy'); showToast('Ссылка скопирована'); }catch(e){ showToast('Скопируй ссылку вручную'); }
+  });
+
   // ---------- settings ----------
   var ACCENT_THEMES = {
     blue:   {blue:'#3b82f6', cta:'#0ea5e9', dim:'#1e4d8f'},
@@ -1689,6 +2204,9 @@
 
   // ---------- init ----------
   applySettings();
+  renderTgProfile();
+  checkReferralParam();
+  renderReferral();
   updateSpinButtonLabels();
   chargeBankUpkeep();
   renderTop();
